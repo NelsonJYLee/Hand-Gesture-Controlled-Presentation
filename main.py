@@ -1,6 +1,9 @@
 import cv2
 import os
 
+from classifier import Classifier
+
+
 #variables
 width, height = 1280, 720
 folderPath = "Presentations"
@@ -18,22 +21,31 @@ print(pathImages)
 imgNumber = 0
 hs, ws = int(120*1.2), int(213*1.2)
 
+classifier = Classifier()
+
 while True:
     #Import Images
-    success, img = cap.read()
+    success, frame = cap.read()
+    frame = cv2.flip(frame, 1)
     pathFullImage = os.path.join(folderPath, pathImages[imgNumber])
     imgCurrent = cv2.imread(pathFullImage)
 
     # Adding webcam image on slides
-    imgSmall = cv2.resize(img, (ws, hs))
+    imgSmall = cv2.resize(frame, (ws, hs))
     h, w, _ = imgCurrent.shape
     imgCurrent[0:hs, w - ws:w] = imgSmall
 
-    cv2.imshow("Image", img)
+    result = classifier.new_frame(frame)
+    frame = result["frame"]
+    gesture = result["predicted gesture"]
+    confidence = result["confidence"]
+
+    #now I integrate moving the powerpoint with the gestures
+
+    cv2.imshow("Image", frame)
     cv2.imshow("Slides", imgCurrent)
 
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
-
 
