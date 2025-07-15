@@ -38,6 +38,7 @@ class Classifier:
         self.labels_dict = {0: "closed", 1: "previous", 2: "next", 3: "pointer", 4: "drawer"}
 
         self.ESC_key = 27
+        self.y_wrist = 0
 
     def reset_results(self):
         self.results = None
@@ -71,6 +72,9 @@ class Classifier:
                     self.data_aux.append(y - hand_landmarks.landmark[0].y)
                     self.x_.append(x)
                     self.y_.append(y)
+
+            #invert. Originally, y of the wrist is a number between 0 and 1.0, where 0 is the top of the screen
+            self.y_wrist = 1.0 - hand_landmarks.landmark[0].y
             
             x1 = int(min(self.x_) * W) - 30
             y1 = int(min(self.y_) * H) - 30
@@ -86,4 +90,4 @@ class Classifier:
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,0), 4)
             cv2.putText(frame, f'{self.predicted_gesture} ({self.confidence*100:.2f}%)', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0,0,0), 3, cv2.LINE_AA)
 
-        return {"frame": self.frame, "predicted gesture": self.predicted_gesture, "confidence": self.confidence}
+        return {"frame": self.frame, "predicted gesture": self.predicted_gesture, "confidence": self.confidence, "y_wrist": self.y_wrist}

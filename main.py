@@ -25,7 +25,9 @@ classifier = Classifier()
 
 buttonPressed = False
 pressedFrames = 0
-delayFrames = 10
+delayFrames = 20
+
+y_threshold = 300
 
 while True:
     #Import Images
@@ -44,9 +46,14 @@ while True:
     gesture = result["predicted gesture"]
     confidence = result["confidence"]
 
-    #now I integrate moving the powerpoint with the gestures
+    #converting the inverted normalized value of the y coordinate of the wrist landmark to pixel coordinates
+    y_wrist = result["y_wrist"] * height
 
-    if buttonPressed == False:
+    print(y_wrist)
+
+    cv2.line(frame, (0, y_threshold), (width, y_threshold), (0, 255, 0), 10)
+
+    if buttonPressed == False and y_wrist > y_threshold:
 
         if gesture == "next" and imgNumber != len(pathImages) - 1:
             imgNumber += 1
@@ -55,15 +62,14 @@ while True:
         if gesture == "previous" and imgNumber != 0:
             imgNumber -= 1
             buttonPressed = True
-        
+    
+    #frames of delay between inputs ensures that actions don't get triggered in quick succession
     if buttonPressed:
         pressedFrames += 1
         if pressedFrames > delayFrames:
             pressedFrames = 0
             buttonPressed = False
     
-    
-
 
     cv2.imshow("Image", frame)
     cv2.imshow("Slides", imgCurrent)
