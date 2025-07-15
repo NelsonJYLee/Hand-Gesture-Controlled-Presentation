@@ -23,6 +23,10 @@ hs, ws = int(120*1.2), int(213*1.2)
 
 classifier = Classifier()
 
+buttonPressed = False
+pressedFrames = 0
+delayFrames = 10
+
 while True:
     #Import Images
     success, frame = cap.read()
@@ -41,6 +45,25 @@ while True:
     confidence = result["confidence"]
 
     #now I integrate moving the powerpoint with the gestures
+
+    if buttonPressed == False:
+
+        if gesture == "next" and imgNumber != len(pathImages) - 1:
+            imgNumber += 1
+            buttonPressed = True
+
+        if gesture == "previous" and imgNumber != 0:
+            imgNumber -= 1
+            buttonPressed = True
+        
+    if buttonPressed:
+        pressedFrames += 1
+        if pressedFrames > delayFrames:
+            pressedFrames = 0
+            buttonPressed = False
+    
+    
+
 
     cv2.imshow("Image", frame)
     cv2.imshow("Slides", imgCurrent)
