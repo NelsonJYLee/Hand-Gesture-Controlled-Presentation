@@ -39,6 +39,7 @@ class Classifier:
 
         self.ESC_key = 27
         self.y_wrist = 0
+        self.pointer_coord = (0,0)
 
     def reset_results(self):
         self.results = None
@@ -73,8 +74,14 @@ class Classifier:
                     self.x_.append(x)
                     self.y_.append(y)
 
+            first_hand = self.results.multi_hand_landmarks[0]
+            landmarks = first_hand.landmark
+
             #invert. Originally, y of the wrist is a number between 0 and 1.0, where 0 is the top of the screen
-            self.y_wrist = 1.0 - hand_landmarks.landmark[0].y
+            self.y_wrist = 1.0 - landmarks[0].y
+
+            self.pointer_coord = (landmarks[8].x, landmarks[8].y)
+            
             
             x1 = int(min(self.x_) * W) - 30
             y1 = int(min(self.y_) * H) - 30
@@ -90,4 +97,4 @@ class Classifier:
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,0), 4)
             cv2.putText(frame, f'{self.predicted_gesture} ({self.confidence*100:.2f}%)', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0,0,0), 3, cv2.LINE_AA)
 
-        return {"frame": self.frame, "predicted gesture": self.predicted_gesture, "confidence": self.confidence, "y_wrist": self.y_wrist}
+        return {"frame": self.frame, "predicted gesture": self.predicted_gesture, "confidence": self.confidence, "y_wrist": self.y_wrist, "pointer_coord": self.pointer_coord}

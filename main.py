@@ -15,8 +15,13 @@ cap.set(3, width)
 cap.set(4, height)
 
 #Get the list of presentation images
-pathImages = sorted(os.listdir(folderPath), key = len)
+#sort the files by numerical names
+pathImages = sorted(
+    [f for f in os.listdir(folderPath) if f.endswith((".jpg", ".png"))],
+    key=lambda x: int(os.path.splitext(x)[0])
+)
 print(pathImages)
+
 
 imgNumber = 0
 hs, ws = int(120*1.2), int(213*1.2)
@@ -45,23 +50,35 @@ while True:
     frame = result["frame"]
     gesture = result["predicted gesture"]
     confidence = result["confidence"]
+    pointer_coord = result["pointer_coord"]
+
+    #converting normalized pointer finger x y values to pixel coordinates
+    new_X = int(int(int(pointer_coord[0] * w) - 0.5*w) * 2.2)
+    
+    pointer_coord_pixel = (new_X, int(pointer_coord[1] * h))
 
     #converting the inverted normalized value of the y coordinate of the wrist landmark to pixel coordinates
     y_wrist = result["y_wrist"] * height
-
-    print(y_wrist)
 
     cv2.line(frame, (0, y_threshold), (width, y_threshold), (0, 255, 0), 10)
 
     if buttonPressed == False and y_wrist > y_threshold:
 
+        #Gesture 1: show next slide
         if gesture == "next" and imgNumber != len(pathImages) - 1:
             imgNumber += 1
             buttonPressed = True
 
+        #Gesture 2: show previous slide
         if gesture == "previous" and imgNumber != 0:
             imgNumber -= 1
             buttonPressed = True
+
+    #need to figure out a way to get more range with my hand movements,
+    #Gesture3: pointer on slide
+    if gesture == "pointer":
+        cv2.circle(imgCurrent, pointer_coord_pixel, 12, (0, 0, 225), cv2.FILLED)
+
     
     #frames of delay between inputs ensures that actions don't get triggered in quick succession
     if buttonPressed:
