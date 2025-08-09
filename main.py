@@ -78,7 +78,6 @@ while True:
     #Gesture3: pointer on slide
     if gesture == "pointer":
         cv2.circle(imgCurrent, pointer_coord_pixel, 12, (0, 0, 225), cv2.FILLED)
-
     
     #frames of delay between inputs ensures that actions don't get triggered in quick succession
     if buttonPressed:
