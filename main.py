@@ -52,7 +52,7 @@ while True:
     confidence = result["confidence"]
     pointer_coord = result["pointer_coord"]
 
-    #converting normalized pointer finger x y values to pixel coordinates
+    #converting normalized pointer finger x y values to pixel coordinates, and then shifting x by 0.5w and adding sensitivity of 2.2
     new_X = int(int(int(pointer_coord[0] * w) - 0.5*w) * 2.2)
     
     pointer_coord_pixel = (new_X, int(pointer_coord[1] * h))
