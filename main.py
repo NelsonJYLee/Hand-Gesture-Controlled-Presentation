@@ -34,10 +34,13 @@ delayFrames = 20
 
 y_threshold = 300
 
-#list of lists for drawing functionality
-annotations = []
+#list of lists, each reprsenting the annotations for each slide
+#each slide list will have lists of annotation groups, seperating the coordinates that need to be linked
+#each list of annotation groups will contain sets of xy coordinates that will be linked
+annotations = [[] for _ in range(len(pathImages))]
+
 annotation_start = False
-annotation_number = -1
+annotation_number = [-1 for _ in range(len(pathImages))]
 
 while True:
     #Import Images
@@ -92,18 +95,20 @@ while True:
         #creates a new list of coordinates
         if annotation_start == False:
             annotation_start = True
-            annotation_number += 1
-            annotations.append([])
+            annotation_number[imgNumber] += 1
+            annotations[imgNumber].append([])
         cv2.circle(imgCurrent, pointer_coord_pixel, 16, (0, 0, 225), cv2.FILLED)
-        annotations[annotation_number].append(pointer_coord_pixel)
+        annotations[imgNumber][annotation_number[imgNumber]].append(pointer_coord_pixel)
     else:
         annotation_start = False
+
     
-    #connect the coordinates of each list
-    for i in range(len(annotations)):
-        for j in range(len(annotations[i])):
+    
+    #connect the coordinates of each list in each slide
+    for i in range(len(annotations[imgNumber])):
+        for j in range(len(annotations[imgNumber][i])):
             if j != 0:
-                cv2.line(imgCurrent, annotations[i][j-1], annotations[i][j], (0,0,200), 16)
+                cv2.line(imgCurrent, annotations[imgNumber][i][j-1], annotations[imgNumber][i][j], (0,0,200), 16)
 
     
     #frames of delay between inputs ensures that actions don't get triggered in quick succession
