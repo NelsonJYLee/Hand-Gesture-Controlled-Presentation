@@ -32,7 +32,7 @@ buttonPressed = False
 pressedFrames = 0
 delayFrames = 20
 
-y_threshold = 300
+y_threshold = 400
 
 #list of lists, each reprsenting the annotations for each slide
 #each slide list will have lists of annotation groups, seperating the coordinates that need to be linked
@@ -74,7 +74,7 @@ while True:
 
     cv2.line(frame, (0, y_threshold), (width, y_threshold), (0, 255, 0), 10)
 
-    if buttonPressed == False and y_wrist > y_threshold:
+    if buttonPressed == False and y_wrist < y_threshold:
 
         #Gesture 1: show next slide
         if gesture == "next" and imgNumber != len(pathImages) - 1:
@@ -102,7 +102,12 @@ while True:
     else:
         annotation_start = False
 
-    
+    #Gesture5: erase last drawing
+    if gesture == "erase" and not buttonPressed:
+        if annotations[imgNumber]:
+            annotations[imgNumber].pop()
+            annotation_number[imgNumber] -= 1
+            buttonPressed = True
     
     #connect the coordinates of each list in each slide
     for i in range(len(annotations[imgNumber])):

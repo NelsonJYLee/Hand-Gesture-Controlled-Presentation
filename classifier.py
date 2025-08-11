@@ -26,7 +26,7 @@ class Classifier:
 
         self.frame_rgb = None
 
-        self.model_file = './models/model1.pickle'
+        self.model_file = './models/model2.pickle'
         self.model_dict = pickle.load(open(self.model_file, 'rb'))
         self.model = self.model_dict['model']
 
@@ -35,7 +35,7 @@ class Classifier:
         self.mp_drawing_styles = mp.solutions.drawing_styles
 
         self.hands = self.mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.3)
-        self.labels_dict = {0: "closed", 1: "previous", 2: "next", 3: "pointer", 4: "drawer"}
+        self.labels_dict = {0: "closed", 1: "previous", 2: "next", 3: "pointer", 4: "drawer", 5: "erase"}
 
         self.ESC_key = 27
         self.y_wrist = 0
@@ -78,7 +78,7 @@ class Classifier:
             landmarks = first_hand.landmark
 
             #invert. Originally, y of the wrist is a number between 0 and 1.0, where 0 is the top of the screen
-            self.y_wrist = 1.0 - landmarks[0].y
+            self.y_wrist = landmarks[0].y
 
             self.pointer_coord = (landmarks[8].x, landmarks[8].y)
             
