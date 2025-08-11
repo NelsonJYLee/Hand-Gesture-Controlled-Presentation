@@ -34,6 +34,11 @@ delayFrames = 20
 
 y_threshold = 300
 
+#list of lists for drawing functionality
+annotations = []
+annotation_start = False
+annotation_number = -1
+
 while True:
     #Import Images
     success, frame = cap.read()
@@ -52,8 +57,11 @@ while True:
     confidence = result["confidence"]
     pointer_coord = result["pointer_coord"]
 
-    #converting normalized pointer finger x y values to pixel coordinates, and then shifting x by 0.5w and adding sensitivity of 2.2
+    #converting normalized pointer finger x y values to pixel coordinates
+
+    #shifting x by 0.5w and adding sensitivity of 2.2
     new_X = int(int(int(pointer_coord[0] * w) - 0.5*w) * 2.2)
+    #shifting y by 0.25h and adding sensitivity of 2.2
     new_Y = int(int(int(pointer_coord[1] * h) - 0.25*h) * 2.2)
     
     pointer_coord_pixel = (new_X, new_Y)
@@ -75,10 +83,28 @@ while True:
             imgNumber -= 1
             buttonPressed = True
 
-    #need to figure out a way to get more range with my hand movements,
     #Gesture3: pointer on slide
     if gesture == "pointer":
-        cv2.circle(imgCurrent, pointer_coord_pixel, 12, (0, 0, 225), cv2.FILLED)
+        cv2.circle(imgCurrent, pointer_coord_pixel, 16, (0, 0, 225), cv2.FILLED)
+
+    #Gesture4: draw on slide
+    if gesture == "drawer":
+        #creates a new list of coordinates
+        if annotation_start == False:
+            annotation_start = True
+            annotation_number += 1
+            annotations.append([])
+        cv2.circle(imgCurrent, pointer_coord_pixel, 16, (0, 0, 225), cv2.FILLED)
+        annotations[annotation_number].append(pointer_coord_pixel)
+    else:
+        annotation_start = False
+    
+    #connect the coordinates of each list
+    for i in range(len(annotations)):
+        for j in range(len(annotations[i])):
+            if j != 0:
+                cv2.line(imgCurrent, annotations[i][j-1], annotations[i][j], (0,0,200), 16)
+
     
     #frames of delay between inputs ensures that actions don't get triggered in quick succession
     if buttonPressed:
