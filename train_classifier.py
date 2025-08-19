@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import numpy as np
 
-pickle_file = './norm_data1.pickle'
-model_name = 'model1.pickle'
+pickle_file = './norm_data3.pickle'
+model_name = 'model3.pickle'
 
 data_dict = pickle.load(open(pickle_file, 'rb'))
 

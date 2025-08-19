@@ -26,7 +26,7 @@ class Classifier:
 
         self.frame_rgb = None
 
-        self.model_file = './models/model2.pickle'
+        self.model_file = './models/model3.pickle'
         self.model_dict = pickle.load(open(self.model_file, 'rb'))
         self.model = self.model_dict['model']
 
@@ -58,6 +58,12 @@ class Classifier:
         self.results = self.hands.process(self.frame_rgb)
 
         if self.results.multi_hand_landmarks:
+            max_trans_x = float("-inf")
+            min_trans_x = float("inf")
+
+            max_trans_y = float("-inf")
+            min_trans_y = float("inf")
+
             for hand_landmarks in self.results.multi_hand_landmarks:
                 self.mp_drawing.draw_landmarks(
                 self.frame,
@@ -69,10 +75,27 @@ class Classifier:
                 for i in range(len(hand_landmarks.landmark)):
                     x = hand_landmarks.landmark[i].x
                     y = hand_landmarks.landmark[i].y
-                    self.data_aux.append(x - hand_landmarks.landmark[0].x)
-                    self.data_aux.append(y - hand_landmarks.landmark[0].y)
+
+                    trans_x = x - hand_landmarks.landmark[0].x
+                    trans_y = y - hand_landmarks.landmark[0].y
+
+                    max_trans_x = max(max_trans_x, trans_x)
+                    min_trans_x = min(min_trans_x, trans_x)
+
+                    max_trans_y = max(max_trans_y, trans_y)
+                    min_trans_y = min(min_trans_y, trans_y)
+
+                    self.data_aux.append(trans_x)
+                    self.data_aux.append(trans_y)
                     self.x_.append(x)
                     self.y_.append(y)
+            
+            x_range = max_trans_x - min_trans_x
+            y_range = max_trans_y - min_trans_y
+            handsize = max(x_range, y_range)
+
+            for i in range(len(self.data_aux)):
+                self.data_aux[i] /= handsize
 
             first_hand = self.results.multi_hand_landmarks[0]
             landmarks = first_hand.landmark

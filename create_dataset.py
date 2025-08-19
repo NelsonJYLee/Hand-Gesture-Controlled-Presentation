@@ -26,6 +26,8 @@ for dir_ in os.listdir(DATA_DIR):
 
         data_aux = []
         norm_data_aux = []
+        trans_x_vals = []
+        trans_y_vals = []
 
         img = cv2.imread(os.path.join(DATA_DIR, dir_, img_path))
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -37,23 +39,37 @@ for dir_ in os.listdir(DATA_DIR):
                     x = hand_landmarks.landmark[i].x
                     y = hand_landmarks.landmark[i].y
 
-                    norm_x = x - hand_landmarks.landmark[0].x
-                    norm_y = y - hand_landmarks.landmark[0].y
+                    #translate to get values normalized to wrist landmark
+                    trans_x = x - hand_landmarks.landmark[0].x
+                    trans_y = y - hand_landmarks.landmark[0].y
+
+                    trans_x_vals.append(trans_x)
+                    trans_y_vals.append(trans_y)
 
                     data_aux.append(x)
                     data_aux.append(y)
 
-                    norm_data_aux.append(norm_x)
-                    norm_data_aux.append(norm_y)
+                    norm_data_aux.append(trans_x)
+                    norm_data_aux.append(trans_y)
 
             data.append(data_aux)
+
+            x_range = max(trans_x_vals) - min(trans_x_vals)
+            y_range = max(trans_y_vals) - min(trans_y_vals)
+            handsize = max(x_range, y_range)
+            
+            #normalize by handsize
+            for i in range(len(norm_data_aux)):
+                 norm_data_aux[i] /= handsize
+
             norm_data.append(norm_data_aux)
+
             labels.append(dir_)
 
-f = open('data1.pickle', 'wb')
+f = open('data3.pickle', 'wb')
 pickle.dump({'data': data, 'labels': labels}, f)
 f.close()
 
-norm_f = open('norm_data1.pickle', 'wb')
+norm_f = open('norm_data3.pickle', 'wb')
 pickle.dump({'data': norm_data, 'labels': labels}, norm_f)
 norm_f.close()

@@ -57,6 +57,7 @@ while True:
     result = classifier.new_frame(frame)
     frame = result["frame"]
     gesture = result["predicted gesture"]
+    print(gesture)
     confidence = result["confidence"]
     pointer_coord = result["pointer_coord"]
 
