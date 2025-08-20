@@ -30,7 +30,7 @@ classifier = Classifier()
 
 buttonPressed = False
 pressedFrames = 0
-delayFrames = 20
+delayFrames = 10
 
 y_threshold = 400
 
@@ -131,4 +131,3 @@ while True:
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
-

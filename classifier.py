@@ -9,6 +9,7 @@ import pickle
 import cv2
 import mediapipe as mp
 import numpy as np
+from collections import deque, Counter
 
 
 class Classifier:
@@ -19,6 +20,9 @@ class Classifier:
         self.prediction = None
         self.predicted_gesture = None
         self.confidence = None
+
+        #double-ended queue to keep track of predicted gestures from the last maxlen frames
+        self.gesture_stream = deque(maxlen = 3)
 
         self.data_aux = []
         self.x_ = []
@@ -76,8 +80,11 @@ class Classifier:
                     x = hand_landmarks.landmark[i].x
                     y = hand_landmarks.landmark[i].y
 
-                    trans_x = x - hand_landmarks.landmark[0].x
-                    trans_y = y - hand_landmarks.landmark[0].y
+                    wrist = hand_landmarks.landmark[0]
+                    
+                    #normalize to wrist coordinate
+                    trans_x = x - wrist.x
+                    trans_y = y - wrist.y
 
                     max_trans_x = max(max_trans_x, trans_x)
                     min_trans_x = min(min_trans_x, trans_x)
@@ -94,6 +101,7 @@ class Classifier:
             y_range = max_trans_y - min_trans_y
             handsize = max(x_range, y_range)
 
+            #normalizing according to hand size
             for i in range(len(self.data_aux)):
                 self.data_aux[i] /= handsize
 
@@ -105,19 +113,36 @@ class Classifier:
 
             self.pointer_coord = (landmarks[8].x, landmarks[8].y)
             
-            
+            #borders of the hand
             x1 = int(min(self.x_) * W) - 30
             y1 = int(min(self.y_) * H) - 30
 
             x2 = int(max(self.x_) * W) + 30
             y2 = int(max(self.y_) * H) + 30
 
+            
             probs = self.model.predict_proba([np.asarray(self.data_aux)])
-            self.confidence = np.max(probs)
-            self.prediction = np.argmax(probs)
-            self.predicted_gesture = self.labels_dict[int(self.prediction)]
+            draft_prediction = np.argmax(probs)
+            draft_predicted_gesture = self.labels_dict[int(draft_prediction)]
+            self.gesture_stream.append((draft_predicted_gesture, probs[0][draft_prediction]))
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,0), 4)
-            cv2.putText(frame, f'{self.predicted_gesture} ({self.confidence*100:.2f}%)', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0,0,0), 3, cv2.LINE_AA)
+            # Majority vote
+            gestures = [g for g, _ in self.gesture_stream]
+            counts = Counter(gestures)
+            most_common_gesture, freq = counts.most_common(1)[0]
+
+            #if there is a majority, we return the gesture and it's average probability
+            if freq > len(gestures) // 2:
+                sum = 0
+                for g, p in self.gesture_stream:
+                    if g == most_common_gesture:
+                        sum += p
+                
+                self.confidence = sum / freq
+                self.predicted_gesture = most_common_gesture
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,0), 4)
+                cv2.putText(frame, f'{self.predicted_gesture} ({self.confidence*100:.2f}%)', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0,0,0), 3, cv2.LINE_AA)
+
 
         return {"frame": self.frame, "predicted gesture": self.predicted_gesture, "confidence": self.confidence, "y_wrist": self.y_wrist, "pointer_coord": self.pointer_coord}
