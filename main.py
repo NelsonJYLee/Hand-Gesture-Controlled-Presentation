@@ -24,7 +24,7 @@ print(pathImages)
 
 
 imgNumber = 0
-hs, ws = int(120*1.2), int(213*1.2)
+hs, ws = 0, 0
 
 classifier = Classifier()
 
@@ -50,8 +50,10 @@ while True:
     imgCurrent = cv2.imread(pathFullImage)
 
     # Adding webcam image on slides
-    imgSmall = cv2.resize(frame, (ws, hs))
     h, w, _ = imgCurrent.shape
+    hs = int(h * 0.25)
+    ws = int (w * 0.25)
+    imgSmall = cv2.resize(frame, (ws, hs))
     imgCurrent[0:hs, w - ws:w] = imgSmall
 
     result = classifier.new_frame(frame)
@@ -115,7 +117,6 @@ while True:
         for j in range(len(annotations[imgNumber][i])):
             if j != 0:
                 cv2.line(imgCurrent, annotations[imgNumber][i][j-1], annotations[imgNumber][i][j], (0,0,200), 16)
-
     
     #frames of delay between inputs ensures that actions don't get triggered in quick succession
     if buttonPressed:
@@ -123,7 +124,6 @@ while True:
         if pressedFrames > delayFrames:
             pressedFrames = 0
             buttonPressed = False
-    
 
     cv2.imshow("Image", frame)
     cv2.imshow("Slides", imgCurrent)
