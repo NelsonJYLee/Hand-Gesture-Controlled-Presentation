@@ -59,7 +59,6 @@ while True:
     result = classifier.new_frame(frame)
     frame = result["frame"]
     gesture = result["predicted gesture"]
-    print(gesture)
     confidence = result["confidence"]
     pointer_coord = result["pointer_coord"]
 
@@ -74,8 +73,6 @@ while True:
 
     #converting the inverted normalized value of the y coordinate of the wrist landmark to pixel coordinates
     y_wrist = result["y_wrist"] * height
-
-    cv2.line(frame, (0, y_threshold), (width, y_threshold), (128, 0, 0), 10)
 
     if buttonPressed == False and y_wrist < y_threshold:
 
